@@ -1,0 +1,147 @@
+{
+    "_config_name": "views.view.node_results",
+    "name": "node_results",
+    "description": "",
+    "tag": "default",
+    "disabled": false,
+    "base_table": "node",
+    "human_name": "Node results",
+    "core": 7,
+    "display": {
+        "default": {
+            "display_title": "Master",
+            "display_plugin": "default",
+            "display_options": {
+                "query": {
+                    "type": "views_query",
+                    "options": []
+                },
+                "title": "Results",
+                "use_more_always": false,
+                "access": {
+                    "type": "h5p-node"
+                },
+                "cache": {
+                    "type": "none"
+                },
+                "exposed_form": {
+                    "type": "basic"
+                },
+                "pager": {
+                    "type": "full",
+                    "options": {
+                        "items_per_page": "20"
+                    }
+                },
+                "style_plugin": "table",
+                "relationships": {
+                    "h5p_points": {
+                        "id": "h5p_points",
+                        "table": "h5p_nodes",
+                        "field": "h5p_points"
+                    },
+                    "uid": {
+                        "id": "uid",
+                        "table": "h5p_points",
+                        "field": "uid",
+                        "relationship": "h5p_points"
+                    }
+                },
+                "fields": {
+                    "name": {
+                        "id": "name",
+                        "table": "users",
+                        "field": "name",
+                        "relationship": "uid"
+                    },
+                    "started": {
+                        "id": "started",
+                        "table": "h5p_points",
+                        "field": "started",
+                        "relationship": "h5p_points"
+                    },
+                    "finished": {
+                        "id": "finished",
+                        "table": "h5p_points",
+                        "field": "finished",
+                        "relationship": "h5p_points"
+                    },
+                    "points": {
+                        "id": "points",
+                        "table": "h5p_points",
+                        "field": "points",
+                        "relationship": "h5p_points"
+                    },
+                    "max_points": {
+                        "id": "max_points",
+                        "table": "h5p_points",
+                        "field": "max_points",
+                        "relationship": "h5p_points"
+                    }
+                },
+                "sorts": {
+                    "created": {
+                        "id": "created",
+                        "table": "node",
+                        "field": "created",
+                        "order": "DESC"
+                    }
+                },
+                "arguments": {
+                    "nid": {
+                        "id": "nid",
+                        "table": "node",
+                        "field": "nid",
+                        "default_action": "default",
+                        "default_argument_type": "node",
+                        "summary": {
+                            "number_of_records": "0",
+                            "format": "default_summary"
+                        },
+                        "summary_options": {
+                            "items_per_page": "25"
+                        }
+                    }
+                },
+                "filters": {
+                    "status": {
+                        "id": "status",
+                        "table": "node",
+                        "field": "status",
+                        "value": 1,
+                        "group": 1,
+                        "expose": {
+                            "operator": false
+                        }
+                    },
+                    "type": {
+                        "id": "type",
+                        "table": "node",
+                        "field": "type",
+                        "value": {
+                            "h5p_content": "h5p_content"
+                        }
+                    }
+                }
+            }
+        },
+        "page": {
+            "display_title": "Page",
+            "display_plugin": "page",
+            "display_options": {
+                "query": {
+                    "type": "views_query",
+                    "options": []
+                },
+                "path": "node/%/h5p-results",
+                "menu": {
+                    "type": "tab",
+                    "title": "Results",
+                    "weight": "0",
+                    "context": 0,
+                    "context_only_inline": 0
+                }
+            }
+        }
+    }
+}
