@@ -1,5 +1,5 @@
 <?php
-require_once(drupal_get_path('module', 'h5p') . '/library/h5p-event-base.class.php');
+require_once(backdrop_get_path('module', 'h5p') . '/library/h5p-event-base.class.php');
 
 /**
  * Makes it easy to track events throughout the H5P system.
@@ -48,35 +48,35 @@ class H5PEvent extends H5PEventBase {
             AND library_name = :library_name
             AND library_version = :library_version
         ", array(
-          ':type' => $type,
-          ':library_name' => $this->library_name,
-          ':library_version' => $this->library_version
-        ))->fetchField();
+      ':type' => $type,
+      ':library_name' => $this->library_name,
+      ':library_version' => $this->library_version,
+    ))->fetchField();
 
     if ($current_num === FALSE) {
       // Insert new counter
       db_insert('h5p_counters')
           ->fields(array(
-            'type' => $type,
-            'library_name' => $this->library_name,
-            'library_version' => $this->library_version,
-            'num' => 1
-          ))
+        'type' => $type,
+        'library_name' => $this->library_name,
+        'library_version' => $this->library_version,
+        'num' => 1,
+      ))
           ->execute();
     }
     else {
-     // Update counter with num+1
-     db_query(
+      // Update counter with num+1
+      db_query(
          "UPDATE {h5p_counters}
              SET num = num + 1
            WHERE type = :type
              AND library_name = :library_name
              AND library_version = :library_version
          ", array(
-           ':type' => $type,
-           ':library_name' => $this->library_name,
-           ':library_version' => $this->library_version
-         ));
+        ':type' => $type,
+        ':library_name' => $this->library_name,
+        ':library_version' => $this->library_version,
+      ));
     }
   }
 }

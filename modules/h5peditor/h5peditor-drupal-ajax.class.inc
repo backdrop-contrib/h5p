@@ -4,7 +4,7 @@
  * Handles Ajax functions that must be implemented separately for each of the
  * H5P plugins
  */
-class H5PEditorDrupalAjax implements H5PEditorAjaxInterface {
+class H5PEditorBackdropAjax implements H5PEditorAjaxInterface {
 
   /**
    * Gets latest library versions that exists locally
@@ -131,7 +131,8 @@ class H5PEditorDrupalAjax implements H5PEditorAjaxInterface {
         ':machine_name' => $parsedLib['machineName'],
         ':major_version' => $parsedLib['majorVersion'],
         ':minor_version' => $parsedLib['minorVersion'],
-        ':language_code' => $language_code)
+        ':language_code' => $language_code,
+      )
       )->fetchField();
 
       if ($translation !== FALSE) {

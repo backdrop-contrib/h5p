@@ -2432,7 +2432,7 @@ class H5PCore {
     // Using content dependencies
     foreach ($dependencies as $dependency) {
       if (isset($dependency['path']) === FALSE) {
-        $dependency['path'] = $this->getDependencyPath($dependency);
+        $dependency['path'] = 'libraries/' . H5PCore::libraryToString($dependency, TRUE);
         $dependency['preloadedJs'] = explode(',', $dependency['preloadedJs']);
         $dependency['preloadedCss'] = explode(',', $dependency['preloadedCss']);
       }
@@ -2450,16 +2450,6 @@ class H5PCore {
     }
 
     return $files;
-  }
-
-  /**
-   * Get the path to the dependency.
-   *
-   * @param array $dependency
-   * @return string
-   */
-  protected function getDependencyPath(array $dependency) {
-    return 'libraries/' . H5PCore::libraryToString($dependency, TRUE);
   }
 
   private static function getDependenciesHash(&$dependencies) {
@@ -2754,7 +2744,7 @@ class H5PCore {
     foreach ($arr as $key => $val) {
       $next = -1;
       while (($next = strpos($key, '_', $next + 1)) !== FALSE) {
-        $key = substr_replace($key, strtoupper($key[$next + 1]), $next, 2);
+        $key = substr_replace($key, strtoupper($key{$next + 1}), $next, 2);
       }
 
       $newArr[$key] = $val;
@@ -4033,6 +4023,20 @@ class H5PContentValidator {
           // not have a corresponding semantics field. Remove it.
           // $this->h5pF->setErrorMessage($this->h5pF->t('H5P internal error: no validator exists for @key', array('@key' => $key)));
           unset($group->$key);
+        }
+      }
+    }
+    if (!(isset($semantics->optional) && $semantics->optional)) {
+      if ($group === NULL) {
+        // Error no value. Errors aren't printed...
+        return;
+      }
+      foreach ($semantics->fields as $field) {
+        if (!(isset($field->optional) && $field->optional)) {
+          // Check if field is in group.
+          if (! property_exists($group, $field->name)) {
+            //$this->h5pF->setErrorMessage($this->h5pF->t('No value given for mandatory field ' . $field->name));
+          }
         }
       }
     }

@@ -4,9 +4,10 @@
  * Menu callback - Form builder function for settings.
  */
 function h5p_admin_settings($form, &$form_state) {
+  $config = config('h5p.settings');
   // make sure core is loaded
   $core = _h5p_get_instance('core');
-  $path = drupal_get_path('module', 'h5p');
+  $path = backdrop_get_path('module', 'h5p');
 
   // Get server setup error messages
   $server_setup_errors = $core->checkSetupErrorMessage()->errors;
@@ -15,8 +16,9 @@ function h5p_admin_settings($form, &$form_state) {
     'header' => $core->h5pF->t('Confirmation action'),
     'confirmationDialogMsg' => $core->h5pF->t('Do you still want to enable the hub ?'),
     'cancelLabel' => $core->h5pF->t('Cancel'),
-    'confirmLabel' => $core->h5pF->t('Confirm')
+    'confirmLabel' => $core->h5pF->t('Confirm'),
   );
+  $form['#config'] = 'h5p.settings';
   $form['h5p_display_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display Options'),
@@ -24,7 +26,7 @@ function h5p_admin_settings($form, &$form_state) {
       'js' => array(
         array(
           'data' => 'H5PDisableHubData = ' . json_encode($disable_hub_data) . ';',
-          'type' => 'inline'
+          'type' => 'inline',
         ),
         $path . '/library/js/jquery.js',
         $path . '/library/js/h5p-event-dispatcher.js',
@@ -35,9 +37,9 @@ function h5p_admin_settings($form, &$form_state) {
       'css' => array(
         $path . '/library/styles/h5p-confirmation-dialog.css',
         $path . '/library/styles/h5p.css',
-        $path . '/library/styles/h5p-core-button.css'
-      )
-    )
+        $path . '/library/styles/h5p-core-button.css',
+      ),
+    ),
   );
 
   $button_behaviours_download = array(
@@ -56,21 +58,21 @@ function h5p_admin_settings($form, &$form_state) {
     H5PDisplayOptionBehaviour::CONTROLLED_BY_AUTHOR_DEFAULT_OFF => t('Controlled by author, default is off'),
   );
 
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_frame', t('Display buttons (download, embed and copyright)'), variable_get('h5p_frame', TRUE), '.form-item-h5p-export, .form-item-h5p-embed, .form-item-h5p-copyright, .form-item-h5p-icon');
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_frame', t('Display buttons (download, embed and copyright)'), $config->get('h5p_frame'), '.form-item-h5p-export, .form-item-h5p-embed, .form-item-h5p-copyright, .form-item-h5p-icon');
   $form['h5p_display_options']['h5p_export'] = array(
     '#title' => t('Allow download'),
     '#options' => $button_behaviours_download,
-    '#default_value' => variable_get('h5p_export', H5PDisplayOptionBehaviour::ALWAYS_SHOW),
+    '#default_value' => $config->get('h5p_export'),
     '#type' => 'select',
   );
   $form['h5p_display_options']['h5p_embed'] = array(
     '#title' => t('Embed button'),
     '#options' => $button_behaviours_embed,
-    '#default_value' => variable_get('h5p_embed', H5PDisplayOptionBehaviour::ALWAYS_SHOW),
+    '#default_value' => $config->get('h5p_embed'),
     '#type' => 'select',
   );
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_copyright', t('Copyright button'), variable_get('h5p_copyright', TRUE));
-  _h5p_add_display_option($form['h5p_display_options'], 'h5p_icon', t('About H5P button'), variable_get('h5p_icon', TRUE));
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_copyright', t('Copyright button'), $config->get('h5p_copyright'));
+  _h5p_add_display_option($form['h5p_display_options'], 'h5p_icon', t('About H5P button'), $config->get('h5p_icon'));
   // TODO: Should we remove existing H5P files when export gets disabled?
 
   $h5p_nodes_exists = db_query("SELECT 1 FROM {node} WHERE type = :type", array(':type' => 'h5p_content'))->fetchField();
@@ -78,7 +80,7 @@ function h5p_admin_settings($form, &$form_state) {
   $form['h5p_revisioning'] = array(
     '#type' => 'checkbox',
     '#title' => t('Save content files for each revision'),
-    '#default_value' => variable_get('h5p_revisioning', '1'),
+    '#default_value' => $config->get('h5p_revisioning'),
     '#description' => t("Disable this feature to save disk space. This value can't be changed if there are existing h5p nodes."),
     '#disabled' => $h5p_nodes_exists,
   );
@@ -88,7 +90,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#type' => 'textfield',
     '#maxlength' => 8192,
     '#title' => t('White list of accepted files.'),
-    '#default_value' => variable_get('h5p_whitelist', H5PCore::$defaultContentWhitelist),
+    '#default_value' => $config->get('h5p_whitelist'),
     '#description' => t("List accepted content file extensions for uploaded H5Ps. List extensions separated by space, eg. 'png jpg jpeg gif webm mp4 ogg mp3'. Changing this list has security implications. Do not change it if you don't know what you're doing. Adding php to the list is for instance a security risk."),
   );
 
@@ -96,7 +98,7 @@ function h5p_admin_settings($form, &$form_state) {
     '#type' => 'textfield',
     '#maxlength' => 8192,
     '#title' => t('White list of extra accepted files in libraries.'),
-    '#default_value' => variable_get('h5p_library_whitelist_extras', H5PCore::$defaultLibraryWhitelistExtras),
+    '#default_value' => $config->get('h5p_library_whitelist_extras'),
     '#description' => t("Libraries might need to accept more files that should be allowed in normal contents. Add extra files here. Changing this list has security implications. Do not change it if you don't know what you're doing. Adding php to the list is for instance a security risk."),
   );
 
@@ -104,8 +106,8 @@ function h5p_admin_settings($form, &$form_state) {
   $form['h5p_dev_mode'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable H5P development mode'),
-    '#default_value' => variable_get('h5p_dev_mode', '0'),
-    '#description' => t('Always update uploaded H5P libraries regardless of patch version. Read library data from file (semantics.json).')
+    '#default_value' => $config->get('h5p_dev_mode'),
+    '#description' => t('Always update uploaded H5P libraries regardless of patch version. Read library data from file (semantics.json).'),
   );
 
 //  $form['h5p_content_dev_mode'] = array(
@@ -113,41 +115,41 @@ function h5p_admin_settings($form, &$form_state) {
 //    '#title' => t('Enable H5P content development mode'),
 //    '#default_value' => variable_get('h5p_content_dev_mode', '0'),
 //    '#description' => t("With this feature enabled content.json will be read from file. Changes to the content made using the editor won't be visible when this mode is actice."),
-//    '#disabled' => TRUE, // Disabled for now, since core is using a Drupal 6-only function
+//    '#disabled' => TRUE, // Disabled for now, since core is using a Backdrop 6-only function
 //  );
 
   $form['h5p_library_development'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable library development directory (For programmers only)'),
-    '#default_value' => variable_get('h5p_library_development', 0),
+    '#default_value' => $config->get('h5p_library_development'),
     '#description' => t('Check to enable development of libraries in the %dev folder. ONLY ENABLE THIS OPTION IF YOU KNOW WHAT YOU ARE DOING! YOUR SITES H5P DATA WILL BE RUINED BY ENABLING THIS OPTION', array('%dev' => _h5p_get_h5p_path() . '/development')),
   );
 
   $form['h5p_save_content_state'] = array(
     '#type' => 'checkbox',
     '#title' => t('Save content state'),
-    '#default_value' => variable_get('h5p_save_content_state', 0),
+    '#default_value' => $config->get('h5p_save_content_state'),
     '#description' => t('Automatically save the current state of interactive content for each user. This means that the user may pick up where he left off.'),
   );
 
   $form['h5p_save_content_frequency'] = array(
     '#type' => 'textfield',
     '#title' => t('Save content state frequency'),
-    '#default_value' => variable_get('h5p_save_content_frequency', 30),
+    '#default_value' => $config->get('h5p_save_content_frequency'),
     '#description' => t("In seconds, how often do you wish the user to auto save their progress. Increasee this number if you're having issues with many ajax request."),
   );
 
   $form['h5p_enable_lrs_content_types'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable LRS dependent content types'),
-    '#default_value' => variable_get('h5p_enable_lrs_content_types', 0),
+    '#default_value' => $config->get('h5p_enable_lrs_content_types'),
     '#description' => t('Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type.'),
   );
 
   $form['h5p_hub_is_enabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Use H5P Hub'),
-    '#default_value' => variable_get('h5p_hub_is_enabled', TRUE),
+    '#default_value' => $config->get('h5p_hub_is_enabled'),
     '#attributes' => array('class' => array('h5p-settings-disable-hub-checkbox')),
     '#description' => t("It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. If this option is disabled you'll have to install and update content types through file upload forms."),
   );
@@ -169,7 +171,7 @@ function h5p_admin_settings($form, &$form_state) {
   $form['h5p_send_usage_statistics'] = array(
     '#type' => 'checkbox',
     '#title' => t('Automatically contribute usage statistics'),
-    '#default_value' => variable_get('h5p_send_usage_statistics', TRUE),
+    '#default_value' => $config->get('h5p_send_usage_statistics'),
     '#description' => t(
         'Usage statistics numbers will automatically be reported to help the developers better ' .
         'understand how H5P is used and to determine potential areas of improvement. Read more about ' .
@@ -229,18 +231,18 @@ function h5p_library_list() {
   $i = 0;
   foreach ($libraries as $versions) {
     foreach ($versions as $library) {
-
+      $usage = $core->h5pF->getLibraryUsage($library->id, $numNotFiltered ? TRUE : FALSE);
       if ($library->runnable) {
         $upgrades = $core->getUpgrades($library, $versions);
-        $upgradeUrl = empty($upgrades) ? FALSE : url('admin/content/h5p/libraries/' . $library->id . '/upgrade', array('query' => drupal_get_destination()));
+        $upgradeUrl = empty($upgrades) ? FALSE : url('admin/content/h5p/libraries/' . $library->id . '/upgrade', array('query' => backdrop_get_destination()));
 
         $restricted = ($library->restricted === '1' ? TRUE : FALSE);
         $restricted_url = url('admin/content/h5p/libraries/' . $library->id . '/restrict', array(
           'query' => array(
             'token' => H5PCore::createToken('library_' . $i),
             'token_id' => $i,
-            'restrict' => ($library->restricted === '1' ? 0 : 1)
-          )
+            'restrict' => ($library->restricted === '1' ? 0 : 1),
+          ),
         ));
       }
       else {
@@ -249,27 +251,18 @@ function h5p_library_list() {
         $restricted_url = NULL;
       }
 
-      $lib_settings = array(
+      $settings['libraryList']['listData'][] = array(
         'title' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')',
         'restricted' => $restricted,
         'restrictedUrl' => $restricted_url,
-        'numContent' => '?',
-        'numContentDependencies' => '?',
-        'numLibraryDependencies' => '?',
+        'numContent' => $core->h5pF->getNumContent($library->id),
+        'numContentDependencies' => $usage['content'] === -1 ? '' : $usage['content'],
+        'numLibraryDependencies' => $usage['libraries'],
         'upgradeUrl' => $upgradeUrl,
         'detailsUrl' => url('admin/content/h5p/libraries/' . $library->id),
-        'deleteUrl' => url('admin/content/h5p/libraries/' . $library->id . '/delete', array('query' => drupal_get_destination()))
+        'deleteUrl' => url('admin/content/h5p/libraries/' . $library->id . '/delete', array('query' => backdrop_get_destination())),
       );
 
-      $params = drupal_get_query_parameters();
-      if (!isset($params['skip-usage'])) {
-        $usage = $core->h5pF->getLibraryUsage($library->id, $numNotFiltered ? TRUE : FALSE);
-        $lib_settings['numContent'] = $core->h5pF->getNumContent($library->id);
-        $lib_settings['numContentDependencies'] = $usage['content'] === -1 ? '' : $usage['content'];
-        $lib_settings['numLibraryDependencies'] = $usage['libraries'];
-      }
-
-      $settings['libraryList']['listData'][] = $lib_settings;
       $i++;
     }
   }
@@ -283,9 +276,9 @@ function h5p_library_list() {
   }
 
   // Add the needed css and javascript
-  $module_path = drupal_get_path('module', 'h5p');
+  $module_path = backdrop_get_path('module', 'h5p');
   _h5p_admin_add_generic_css_and_js($module_path, $settings);
-  drupal_add_js($module_path . '/library/js/h5p-library-list.js');
+  backdrop_add_js($module_path . '/library/js/h5p-library-list.js');
 
   // Create the container which all admin content
   // will appends it's data to. This id is used by h5pintegration
@@ -295,17 +288,17 @@ function h5p_library_list() {
   $html = '';
 
   // Content type cache update form
-  $hubOn = variable_get('h5p_hub_is_enabled', TRUE);
+  $hubOn = config_get('h5p.settings', 'h5p_hub_is_enabled');
   if ($hubOn) {
-    $ct_cache_update_form = drupal_get_form('h5p_content_type_cache_update_form');
+    $ct_cache_update_form = backdrop_get_form('h5p_content_type_cache_update_form');
     $html .= '<h3 class="h5p-admin-header">' . t('Content type cache') . '</h3>' .
-             drupal_render($ct_cache_update_form);
+             backdrop_render($ct_cache_update_form);
   }
 
   // Add libraries form
-  $upload_form = drupal_get_form('h5p_library_upload_form');
+  $upload_form = backdrop_get_form('h5p_library_upload_form');
   $html .= '<h3 class="h5p-admin-header">' . t('Add libraries') . '</h3>' .
-           drupal_render($upload_form);
+           backdrop_render($upload_form);
 
   // Installed libraries list
   $html .= '<h3 class="h5p-admin-header">' . t('Installed libraries') . '</h3>' .
@@ -326,7 +319,7 @@ function h5p_get_not_cached_settings($num) {
     'url' => url('admin/content/h5p/rebuild-cache'),
     'message' => t('Not all content has gotten their cache rebuilt. This is required to be able to delete libraries, and to display how many contents that uses the library.'),
     'progress' => format_plural($num, '1 content need to get its cache rebuilt.', '@count contents needs to get their cache rebuilt.'),
-    'button' => t('Rebuild cache')
+    'button' => t('Rebuild cache'),
   );
 }
 
@@ -361,15 +354,15 @@ function h5p_library_details($library_id) {
     'pageXOfY' => t('Page $x of $y'),
   );
 
-  $h5p_drupal = _h5p_get_instance('interface');
-  $numNotFiltered = $h5p_drupal->getNumNotFiltered();
+  $h5p_backdrop = _h5p_get_instance('interface');
+  $numNotFiltered = $h5p_backdrop->getNumNotFiltered();
   if ($numNotFiltered) {
     $settings['libraryInfo']['notCached'] = h5p_get_not_cached_settings($numNotFiltered);
   }
   else {
     // Build a list of the content using this library
     $nodes_res = db_query('SELECT DISTINCT n.nid, n.title FROM {h5p_nodes_libraries} l join {h5p_nodes} hn on l.content_id = hn.content_id join {node} n on hn.nid = n.nid  where library_id = :id order by n.title', array(':id' => $library_id));
-    foreach($nodes_res as $node) {
+    foreach ($nodes_res as $node) {
       $settings['libraryInfo']['content'][] = array(
         'title' => $node->title,
         'url' => url('node/' . $node->nid),
@@ -377,9 +370,9 @@ function h5p_library_details($library_id) {
     }
   }
 
-  $module_path = drupal_get_path('module', 'h5p');
+  $module_path = backdrop_get_path('module', 'h5p');
   _h5p_admin_add_generic_css_and_js($module_path, $settings);
-  drupal_add_js($module_path . '/library/js/h5p-library-details.js');
+  backdrop_add_js($module_path . '/library/js/h5p-library-details.js');
 
   // Create the container which all admin content
   // will appends it's data to. This id is used by h5pintegration
@@ -395,12 +388,12 @@ function h5p_library_details($library_id) {
 function h5p_library_delete($library_id) {
 
   // Is library deletable ?
-  $h5p_drupal = _h5p_get_instance('interface');
-  $notCached = $h5p_drupal->getNumNotFiltered();
-  $library_usage = $h5p_drupal->getLibraryUsage($library_id, $notCached ? TRUE : FALSE);
+  $h5p_backdrop = _h5p_get_instance('interface');
+  $notCached = $h5p_backdrop->getNumNotFiltered();
+  $library_usage = $h5p_backdrop->getLibraryUsage($library_id, $notCached ? TRUE : FALSE);
   if ($library_usage['content'] === 0 && $library_usage['libraries'] === 0) {
     // Create form:
-    return drupal_get_form('h5p_library_delete_form', $library_id, _h5p_library_details_title($library_id));
+    return backdrop_get_form('h5p_library_delete_form', $library_id, _h5p_library_details_title($library_id));
   }
   else {
     // May not delete this one
@@ -414,16 +407,16 @@ function h5p_library_delete($library_id) {
 function h5p_library_delete_form($form, &$form_state, $library_id, $library_name) {
   $form['library_id'] = array(
     '#type' => 'hidden',
-    '#value' => $library_id
+    '#value' => $library_id,
   );
 
   $form['info'] = array(
-    '#markup' => '<div>' . t('Are you sure you would like to delete the @library_name H5P library?', array('@library_name' => $library_name)) . '</div>'
+    '#markup' => '<div>' . t('Are you sure you would like to delete the @library_name H5P library?', array('@library_name' => $library_name)) . '</div>',
   );
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete')
+    '#value' => t('Delete'),
   );
 
   return $form;
@@ -444,7 +437,7 @@ function h5p_library_delete_form_submit($form, &$form_state) {
  */
 function _h5p_admin_add_generic_css_and_js($module_path, $settings = NULL) {
   foreach (H5PCore::$adminScripts as $script) {
-    drupal_add_js($module_path . '/library/' . $script);
+    backdrop_add_js($module_path . '/library/' . $script);
   }
 
   if ($settings === NULL) {
@@ -456,45 +449,45 @@ function _h5p_admin_add_generic_css_and_js($module_path, $settings = NULL) {
     'NA' => t('N/A'),
     'viewLibrary' => t('View library details'),
     'deleteLibrary' => t('Delete library'),
-    'upgradeLibrary' => t('Upgrade library content')
+    'upgradeLibrary' => t('Upgrade library content'),
   );
 
-  drupal_add_js('H5PAdminIntegration = ' . json_encode($settings) . ';', 'inline');
-  drupal_add_css($module_path . '/library/styles/h5p.css');
-  drupal_add_css($module_path . '/library/styles/h5p-admin.css');
-  drupal_add_css($module_path . '/library/styles/h5p-hub-client.css');
+  backdrop_add_js('H5PAdminIntegration = ' . json_encode($settings) . ';', 'inline');
+  backdrop_add_css($module_path . '/library/styles/h5p.css');
+  backdrop_add_css($module_path . '/library/styles/h5p-admin.css');
+  backdrop_add_css($module_path . '/library/styles/h5p-hub-client.css');
 
-  drupal_add_js(array(
-    'h5p' => h5p_get_core_settings()
+  backdrop_add_js(array(
+    'h5p' => h5p_get_core_settings(),
   ), 'setting');
 }
 
 /**
  * Content type cache update form
  *
- * @param $form_state Drupal form state
+ * @param $form_state Backdrop form state
  *
  * @return mixed Form
  */
 function h5p_content_type_cache_update_form($form_state) {
 
   $form['#attributes'] = array(
-    'class' => 'h5p-admin-upload-libraries-form'
+    'class' => 'h5p-admin-upload-libraries-form',
   );
 
-  $last_updated = variable_get('h5p_content_type_cache_updated_at', false);
+  $last_updated = config_get('h5p.settings', 'h5p_content_type_cache_updated_at');
   $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
 
   $form['h5p_content_type_cache_last_updated'] = array(
     '#type' => 'item',
     '#title' => t('Last update'),
     '#markup' => $date_formatted,
-    '#description' => t('Here you can update the content type cache from the H5P hub. This is used to show the available libraries in the H5P authoring tool. Making sure the content type cache is up to date will ensure that you can view and download the latest libraries.')
+    '#description' => t('Here you can update the content type cache from the H5P hub. This is used to show the available libraries in the H5P authoring tool. Making sure the content type cache is up to date will ensure that you can view and download the latest libraries.'),
   );
 
   $form['submit'] = array(
     '#value' => t('Update'),
-    '#type' => 'submit'
+    '#type' => 'submit',
   );
 
   return $form;
@@ -515,13 +508,13 @@ function h5p_content_type_cache_update_form_submit($form, &$form_state) {
 function h5p_library_upload_form($form_state) {
   $form['#attributes'] = array(
     'enctype' => 'multipart/form-data',
-    'class' => 'h5p-admin-upload-libraries-form'
+    'class' => 'h5p-admin-upload-libraries-form',
   );
 
   $form['h5p'] = array(
     '#title' => t('H5P'),
     '#type' => 'file',
-    '#description' => t('Here you can upload new libraries or upload updates to existing libraries. Files uploaded here must be in the .h5p file format.')
+    '#description' => t('Here you can upload new libraries or upload updates to existing libraries. Files uploaded here must be in the .h5p file format.'),
   );
 
   $form['submit'] = array(
@@ -539,19 +532,23 @@ function h5p_library_upload_form_validate($form, &$form_state) {
   h5p_validate_h5p_file_upload($form, $form_state);
 }
 
-function h5p_validate_h5p_file_upload($form, &$form_state, $upgradeOnly = FALSE){
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
+function h5p_validate_h5p_file_upload($form, &$form_state, $upgradeOnly = FALSE) {
   $validators = array(
     'file_validate_extensions' => array('h5p'),
   );
   // New uploads need to be saved in temp in order to be viewable
   // during node preview.
-  $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . uniqid('h5p-');
+  $temporary_file_path = 'public://' . config_get('h5p.settings', 'h5p_default_path') . '/temp/' . uniqid('h5p-');
   file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
 
   if ($file = file_save_upload('h5p', $validators, $temporary_file_path)) {
     // These has to be set instead of sending parameteres to the validation function.
-    $_SESSION['h5p_upload'] = drupal_realpath($file->uri);
-    $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
+    $_SESSION['h5p_upload'] = backdrop_realpath($file->uri);
+    $_SESSION['h5p_upload_folder'] = backdrop_realpath($temporary_file_path);
 
     $validator = _h5p_get_instance('validator');
     if ($validator->isValidPackage(TRUE, $upgradeOnly) === FALSE) {
@@ -582,8 +579,8 @@ function h5p_library_upload_form_submit($form, &$form_state) {
  */
 function h5p_rebuild_cache() {
   if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    drupal_set_message(t('HTTP POST is required.'), 'error');
-    drupal_set_title(t('Error'));
+    backdrop_set_message(t('HTTP POST is required.'), 'error');
+    backdrop_set_title(t('Error'));
     return '';
   }
 
@@ -627,7 +624,7 @@ function h5p_content_upgrade($library_id) {
   $library = $versions[$library_id];
   $upgrades = $core->getUpgrades($library, $versions);
 
-  drupal_set_title(t('Upgrade @library content', array('@library' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')')));
+  backdrop_set_title(t('Upgrade @library content', array('@library' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')')));
   if (count($versions) < 2) {
     return t("There are no available upgrades for this library.");
   }
@@ -660,22 +657,22 @@ function h5p_content_upgrade($library_id) {
         'version' => $library->major_version . '.' . $library->minor_version,
       ),
       'libraryBaseUrl' => url('admin/content/h5p/upgrade/library'),
-      'scriptBaseUrl' => base_path() . drupal_get_path('module', 'h5p') . '/library/js',
-      'buster' => '?' . variable_get('css_js_query_string', ''),
+      'scriptBaseUrl' => base_path() . backdrop_get_path('module', 'h5p') . '/library/js',
+      'buster' => '?' . state_get('css_js_query_string', ''),
       'versions' => $upgrades,
       'contents' => $contents,
       'buttonLabel' => t('Upgrade'),
       'infoUrl' => url('admin/content/h5p/libraries/' . $library_id . '/upgrade'),
       'total' => $contents,
       'token' => H5PCore::createToken('contentupgrade'), // Use token to avoid unauthorized updating
-    )
+    ),
   );
 
   // Add JavaScripts
-  $module_path = drupal_get_path('module', 'h5p');
+  $module_path = backdrop_get_path('module', 'h5p');
   _h5p_admin_add_generic_css_and_js($module_path, $settings);
-  drupal_add_js($module_path . '/library/js/h5p-version.js');
-  drupal_add_js($module_path . '/library/js/h5p-content-upgrade.js');
+  backdrop_add_js($module_path . '/library/js/h5p-version.js');
+  backdrop_add_js($module_path . '/library/js/h5p-content-upgrade.js');
 
   return '<div id="h5p-admin-container">' . t('Please enable JavaScript.') . '</div>';
 }
@@ -739,7 +736,7 @@ function h5p_content_upgrade_progress($library_id) {
 
       // Clear content cache
       $interface->updateContentFields($id, array(
-        'filtered' => ''
+        'filtered' => '',
       ));
     }
   }
@@ -785,8 +782,8 @@ function h5p_content_upgrade_progress($library_id) {
     }
   }
 
-  drupal_add_http_header('Cache-Control', 'no-cache');
-  drupal_add_http_header('Content-type', 'application/json');
+  backdrop_add_http_header('Cache-Control', 'no-cache');
+  backdrop_add_http_header('Content-type', 'application/json');
   print json_encode($out);
 }
 
@@ -802,8 +799,8 @@ function h5p_content_upgrade_library($name, $major, $minor) {
     'name' => $name,
     'version' => (object) array(
       'major' => $major,
-      'minor' => $minor
-    )
+      'minor' => $minor,
+    ),
   );
 
   $core = _h5p_get_instance('core');
@@ -813,16 +810,20 @@ function h5p_content_upgrade_library($name, $major, $minor) {
     $dev_lib = $core->h5pD->getLibrary($library->name, $library->version->major, $library->version->minor);
   }
 
-  $upgrades_script = _h5p_get_h5p_path() . (isset($dev_lib) ? '/'. $dev_lib['path'] : '/libraries/' . $library->name . '-' . $library->version->major . '.' . $library->version->minor) . '/upgrades.js';
+  $upgrades_script = _h5p_get_h5p_path() . (isset($dev_lib) ? '/' . $dev_lib['path'] : '/libraries/' . $library->name . '-' . $library->version->major . '.' . $library->version->minor) . '/upgrades.js';
   if (file_exists($upgrades_script)) {
     $library->upgradesScript = base_path() . $upgrades_script;
   }
 
-  drupal_add_http_header('Cache-Control', 'no-cache');
-  drupal_add_http_header('Content-type', 'application/json');
+  backdrop_add_http_header('Cache-Control', 'no-cache');
+  backdrop_add_http_header('Content-type', 'application/json');
   print json_encode($library);
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function h5p_restrict_library_callback($library_id) {
   $restricted = filter_input(INPUT_GET, 'restrict');
   $restrict = ($restricted === '1');
@@ -834,8 +835,8 @@ function h5p_restrict_library_callback($library_id) {
 
   db_update('h5p_libraries')
     ->fields(array(
-      'restricted' => $restricted
-    ))
+    'restricted' => $restricted,
+  ))
     ->condition('library_id', $library_id)
     ->execute();
 
@@ -845,7 +846,7 @@ function h5p_restrict_library_callback($library_id) {
         'token' => H5PCore::createToken('library_' . $token_id),
         'token_id' => $token_id,
         'restrict' => ($restrict ? 0 : 1),
-      )
+      ),
     )),
   ));
 }

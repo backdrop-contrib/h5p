@@ -3,7 +3,7 @@
 /**
  * Handles all communication with the database.
  */
-class H5peditorDrupalStorage implements H5peditorStorage {
+class H5peditorBackdropStorage implements H5peditorStorage {
 
   /**
    * Load language file(JSON) from database.
@@ -26,11 +26,11 @@ class H5peditorDrupalStorage implements H5peditorStorage {
             AND hl.minor_version = :minor
             AND hlt.language_code = :lang",
         array(
-          ':name' => $machineName,
-          ':major' => $majorVersion,
-          ':minor' => $minorVersion,
-          ':lang' => $languageCode,
-        ))->fetchField();
+      ':name' => $machineName,
+      ':major' => $majorVersion,
+      ':minor' => $minorVersion,
+      ':lang' => $languageCode,
+    ))->fetchField();
 
     return ($lang === FALSE ? NULL : $lang);
   }
@@ -53,12 +53,12 @@ class H5peditorDrupalStorage implements H5peditorStorage {
             AND hl.major_version = :major
             AND hl.minor_version = :minor",
         array(
-          ':name' => $machineName,
-          ':major' => $majorVersion,
-          ':minor' => $minorVersion
-        ));
+      ':name' => $machineName,
+      ':major' => $majorVersion,
+      ':minor' => $minorVersion,
+    ));
 
-    $codes = array('en'); // Semantics is 'en' by default. 
+    $codes = array('en'); // Semantics is 'en' by default.
     foreach ($results as $result) {
       $codes[] = $result->language_code;
     }
@@ -108,10 +108,10 @@ class H5peditorDrupalStorage implements H5peditorStorage {
            AND minor_version = :minor
            AND semantics IS NOT NULL", // TODO: Consider if semantics is really needed (DB performance-wise)
           array(
-            ':name' => $library->name,
-            ':major' => $library->majorVersion,
-            ':minor' => $library->minorVersion
-          ))
+          ':name' => $library->name,
+          ':major' => $library->majorVersion,
+          ':minor' => $library->minorVersion,
+        ))
           ->fetchObject();
         if ($details !== FALSE) {
           $library->tutorialUrl = $details->tutorial_url;
@@ -184,8 +184,8 @@ class H5peditorDrupalStorage implements H5peditorStorage {
   public function alterLibraryFiles(&$files, $libraries) {
     $mode = 'editor';
     $library_list = _h5p_dependencies_to_library_list($libraries);
-    drupal_alter('h5p_scripts', $files['scripts'], $library_list, $mode);
-    drupal_alter('h5p_styles', $files['styles'], $library_list, $mode);
+    backdrop_alter('h5p_scripts', $files['scripts'], $library_list, $mode);
+    backdrop_alter('h5p_styles', $files['styles'], $library_list, $mode);
   }
 
   /**
@@ -198,7 +198,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
    */
   public static function saveFileTemporarily($data, $move_file = FALSE) {
     $temp_id = uniqid('h5p-');
-    $temporary_file_path = 'public://' . variable_get('h5p_default_path', 'h5p') . '/temp/' . $temp_id;
+    $temporary_file_path = 'public://' . config_get('h5p.settings', 'h5p_default_path') . '/temp/' . $temp_id;
     file_prepare_directory($temporary_file_path, FILE_CREATE_DIRECTORY);
     $name = $temp_id . '.h5p';
     $target = $temporary_file_path . DIRECTORY_SEPARATOR . $name;
@@ -213,12 +213,12 @@ class H5peditorDrupalStorage implements H5peditorStorage {
     }
 
     // Set session variables necessary for finding the files
-    $_SESSION['h5p_upload_folder'] = drupal_realpath($temporary_file_path);
-    $_SESSION['h5p_upload'] = drupal_realpath($target);
+    $_SESSION['h5p_upload_folder'] = backdrop_realpath($temporary_file_path);
+    $_SESSION['h5p_upload'] = backdrop_realpath($target);
 
     return (object) array(
-      'dir' => drupal_realpath($temporary_file_path),
-      'fileName' => $name
+      'dir' => backdrop_realpath($temporary_file_path),
+      'fileName' => $name,
     );
   }
 
@@ -235,7 +235,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
     $file_type = $file->getType();
     $file_name = $file->getName();
     if ($content_id) {
-      $h5pPath = variable_get('h5p_default_path', 'h5p');
+      $h5pPath = config_get('h5p.settings', 'h5p_default_path');
       $uri .= "{$h5pPath}/content/{$content_id}/{$file_type}s/{$file_name}";
     }
     else {
@@ -244,7 +244,7 @@ class H5peditorDrupalStorage implements H5peditorStorage {
 
     global $user;
 
-    // Keep track of temporary files so they can be cleaned up later by Drupal
+    // Keep track of temporary files so they can be cleaned up later by Backdrop
     $file_managed = (object) array(
       'uid' => $user->uid,
       'filename' => $file->getName(),

@@ -1,6 +1,6 @@
 <?php
 
-class H5PDrupal implements H5PFrameworkInterface {
+class H5PBackdrop implements H5PFrameworkInterface {
 
   /**
    * Implements getPlatformInfo
@@ -11,7 +11,7 @@ class H5PDrupal implements H5PFrameworkInterface {
     $h5p_info = unserialize(db_query("SELECT info FROM {system} WHERE name = 'h5p'")->fetchField());
 
     return array(
-      'name' => 'drupal',
+      'name' => 'backdrop',
       'version' => VERSION,
       'h5pVersion' => isset($h5p_info['version']) ? $h5p_info['version'] : NULL,
     );
@@ -25,19 +25,19 @@ class H5PDrupal implements H5PFrameworkInterface {
     if (!empty($data)) {
       $options['method'] = 'POST';
       $options['headers'] = array(
-        'Content-Type' => 'application/x-www-form-urlencoded'
+        'Content-Type' => 'application/x-www-form-urlencoded',
       );
-      $options['data'] = drupal_http_build_query($data);
+      $options['data'] = backdrop_http_build_query($data);
     }
     if ($stream) {
       @set_time_limit(0);
     }
 
-    $response = drupal_http_request($url, $options);
+    $response = backdrop_http_request($url, $options);
 
     if ($stream && empty($response->error)) {
       // Create file from data
-      H5peditorDrupalStorage::saveFileTemporarily($response->data);
+      H5peditorBackdropStorage::saveFileTemporarily($response->data);
       return TRUE;
     }
 
@@ -70,18 +70,21 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Kesps track of messages for the user.
    * @var array
    */
-  private $messages = array('error' => array(), 'info' => array());
+  private $messages = array(
+    'error' => array(),
+    'info' => array(),
+  );
 
   /**
    * Implements setErrorMessage
    */
   public function setErrorMessage($message, $code = NULL) {
-    if (user_access('create h5p_content content') || drupal_is_cli()) {
-      $this->messages['error'][] = (object)array(
+    if (user_access('create h5p_content content') || backdrop_is_cli()) {
+      $this->messages['error'][] = (object) array(
         'code' => $code,
-        'message' => $message
+        'message' => $message,
       );
-      drupal_set_message($message, 'error');
+      backdrop_set_message($message, 'error');
     }
   }
 
@@ -89,9 +92,9 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements setInfoMessage
    */
   public function setInfoMessage($message) {
-    if (user_access('create h5p_content content') || drupal_is_cli()) {
+    if (user_access('create h5p_content content') || backdrop_is_cli()) {
       $this->messages['info'][] = $message;
-      drupal_set_message($message);
+      backdrop_set_message($message);
     }
   }
 
@@ -104,7 +107,7 @@ class H5PDrupal implements H5PFrameworkInterface {
     }
     $messages = $this->messages[$type];
     $this->messages[$type] = array();
-    drupal_get_messages($type === 'info' ? 'status' : $type, TRUE); // Prevent messages from displaying twice
+    backdrop_get_messages($type === 'info' ? 'status' : $type, TRUE); // Prevent messages from displaying twice
     return $messages;
   }
 
@@ -192,11 +195,11 @@ class H5PDrupal implements H5PFrameworkInterface {
       AND minor_version = :minorVersion
       AND patch_version $operator :patchVersion",
       array(
-        ':machineName' => $library['machineName'],
-        ':majorVersion' => $library['majorVersion'],
-        ':minorVersion' => $library['minorVersion'],
-        ':patchVersion' => $library['patchVersion']
-      )
+      ':machineName' => $library['machineName'],
+      ':majorVersion' => $library['majorVersion'],
+      ':minorVersion' => $library['minorVersion'],
+      ':patchVersion' => $library['patchVersion'],
+    )
     )->fetchField();
     return $result === '1';
   }
@@ -205,7 +208,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements isInDevMode
    */
   public function isInDevMode() {
-    return (bool) variable_get('h5p_dev_mode', '0');
+    return (bool) config_get('h5p.settings', 'h5p_dev_mode');
   }
 
   /**
@@ -260,8 +263,8 @@ class H5PDrupal implements H5PFrameworkInterface {
     );
 
     // Extract results
-    forEach($res as $lib) {
-      $contentCount[$lib->machine_name.' '.$lib->major_version.'.'.$lib->minor_version] = $lib->count;
+    foreach ($res as $lib) {
+      $contentCount[$lib->machine_name . ' ' . $lib->major_version . '.' . $lib->minor_version] = $lib->count;
     }
 
     return $contentCount;
@@ -280,11 +283,11 @@ class H5PDrupal implements H5PFrameworkInterface {
           FROM {h5p_counters}
          WHERE type = :type
         ", array(
-      ':type' => $type
+      ':type' => $type,
     ))->fetchAll();
 
     // Extract results
-    foreach($results as $library) {
+    foreach ($results as $library) {
       $count[$library->name . ' ' . $library->version] = $library->num;
     }
 
@@ -300,7 +303,7 @@ class H5PDrupal implements H5PFrameworkInterface {
       FROM {node}
       WHERE type = :type
     ", array(
-      ':type' => 'h5p_content'
+      ':type' => 'h5p_content',
     ))->fetchField();
 
     return $numAuthors;
@@ -357,7 +360,7 @@ class H5PDrupal implements H5PFrameworkInterface {
       ->execute();
       $libraryData['libraryId'] = $libraryId;
       if ($libraryData['runnable']) {
-        if (!variable_get('h5p_first_runnable_saved', 0)) {
+        if (!config_get('h5p.settings', 'h5p_first_runnable_saved')) {
           h5p_variable_set('h5p_first_runnable_saved', 1);
         }
       }
@@ -503,7 +506,7 @@ class H5PDrupal implements H5PFrameworkInterface {
   public function updateContent($content, $contentMainId = NULL) {
     $content_id = db_query("SELECT content_id FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
     if ($content_id === FALSE) {
-      // This can happen in Drupal when module is reinstalled. (since the ID is predetermined)
+      // This can happen in Backdrop when module is reinstalled. (since the ID is predetermined)
       $this->insertContent($content, $contentMainId);
       return;
     }
@@ -513,7 +516,7 @@ class H5PDrupal implements H5PFrameworkInterface {
       'embed_type' => 'div', // TODO: Determine from library?
       'main_library_id' => $content['library']['libraryId'],
       'filtered' => '',
-      'disable' => $content['disable']
+      'disable' => $content['disable'],
     ));
 
     // Update content
@@ -559,7 +562,7 @@ class H5PDrupal implements H5PFrameworkInterface {
       'main_library_id' => $content['library']['libraryId'],
       'disable' => $content['disable'],
       'filtered' => '',
-      'slug' => ''
+      'slug' => '',
     ));
 
     // Insert
@@ -589,9 +592,9 @@ class H5PDrupal implements H5PFrameworkInterface {
     // Reset user datas for this content
     db_update('h5p_content_user_data')
       ->fields(array(
-        'timestamp' => time(),
-        'data' => 'RESET'
-      ))
+      'timestamp' => time(),
+      'data' => 'RESET',
+    ))
       ->condition('content_main_id', $contentId)
       ->condition('delete_on_content_change', 1)
       ->execute();
@@ -601,9 +604,10 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements getWhitelist
    */
   public function getWhitelist($isLibrary, $defaultContentWhitelist, $defaultLibraryWhitelist) {
-    $whitelist = variable_get('h5p_whitelist', $defaultContentWhitelist);
+    $config = config('h5p.settings');
+    $whitelist = $config->get('h5p_whitelist');
     if ($isLibrary) {
-      $whitelist .= ' ' . variable_get('h5p_library_whitelist_extras', $defaultLibraryWhitelist);
+      $whitelist .= ' ' . $config->get('h5p_library_whitelist_extras');
     }
     return $whitelist;
   }
@@ -653,12 +657,12 @@ class H5PDrupal implements H5PFrameworkInterface {
       $dropCss = in_array($dependency['library']['machineName'], $dropLibraryCssList) ? 1 : 0;
       db_insert('h5p_nodes_libraries')
         ->fields(array(
-          'content_id' => $contentId,
-          'library_id' => $dependency['library']['libraryId'],
-          'dependency_type' => $dependency['type'],
-          'drop_css' => $dropCss,
-          'weight' => $dependency['weight'],
-        ))
+        'content_id' => $contentId,
+        'library_id' => $dependency['library']['libraryId'],
+        'dependency_type' => $dependency['type'],
+        'drop_css' => $dropCss,
+        'weight' => $dependency['weight'],
+      ))
         ->execute();
     }
   }
@@ -697,7 +701,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    * @return array
    */
   public function getLibraryConfig($libraries = NULL) {
-     return variable_get('h5p_library_config', NULL);
+    return config_get('h5p.settings', 'h5p_library_config');
   }
 
   /**
@@ -725,10 +729,10 @@ class H5PDrupal implements H5PFrameworkInterface {
           AND major_version = :major_version
           AND minor_version = :minor_version",
         array(
-          ':machine_name' => $machineName,
-          ':major_version' => $majorVersion,
-          ':minor_version' => $minorVersion
-        ))
+      ':machine_name' => $machineName,
+      ':major_version' => $majorVersion,
+      ':minor_version' => $minorVersion,
+    ))
         ->fetchObject();
 
     if ($library === FALSE) {
@@ -763,11 +767,11 @@ class H5PDrupal implements H5PFrameworkInterface {
   }
 
   private function getSemanticsFromFile($machineName, $majorVersion, $minorVersion) {
-    $semanticsPath = drupal_realpath('public://' . variable_get('h5p_default_path', 'h5p') . '/libraries/' . $machineName . '-' . $majorVersion . '.' . $minorVersion . '/semantics.json');
+    $semanticsPath = backdrop_realpath('public://' . config_get('h5p.settings', 'h5p_default_path') . '/libraries/' . $machineName . '-' . $majorVersion . '.' . $minorVersion . '/semantics.json');
     if (file_exists($semanticsPath)) {
       $semantics = file_get_contents($semanticsPath);
       if (!json_decode($semantics, TRUE)) {
-        drupal_set_message(t('Invalid json in semantics for %library', array('%library' => $machineName)), 'warning');
+        backdrop_set_message(t('Invalid json in semantics for %library', array('%library' => $machineName)), 'warning');
       }
       return $semantics;
     }
@@ -789,10 +793,10 @@ class H5PDrupal implements H5PFrameworkInterface {
             AND major_version = :major_version
             AND minor_version = :minor_version",
           array(
-            ':machine_name' => $machineName,
-            ':major_version' => $majorVersion,
-            ':minor_version' => $minorVersion
-          ))->fetchField();
+        ':machine_name' => $machineName,
+        ':major_version' => $majorVersion,
+        ':minor_version' => $minorVersion,
+      ))->fetchField();
     }
     return ($semantics === FALSE ? NULL : $semantics);
   }
@@ -801,7 +805,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    * Implements alterLibrarySemantics().
    */
   public function alterLibrarySemantics(&$semantics, $name, $majorVersion, $minorVersion) {
-    drupal_alter('h5p_semantics', $semantics, $name, $majorVersion, $minorVersion);
+    backdrop_alter('h5p_semantics', $semantics, $name, $majorVersion, $minorVersion);
   }
 
   /**
@@ -838,8 +842,8 @@ class H5PDrupal implements H5PFrameworkInterface {
       JOIN {h5p_libraries} hl ON hl.library_id = hn.main_library_id
       WHERE content_id = :id",
       array(
-        ':id' => $id
-      )
+      ':id' => $id,
+    )
     )->fetchObject();
 
     if ($content === FALSE) {
@@ -848,7 +852,7 @@ class H5PDrupal implements H5PFrameworkInterface {
 
     // Build metadata object
     $content->metadata = array();
-    foreach(array('authors', 'source', 'license', 'license_version', 'license_extras' ,'year_from', 'year_to', 'changes', 'author_comments', 'default_language') as $value) {
+    foreach (array('authors', 'source', 'license', 'license_version', 'license_extras', 'year_from', 'year_to', 'changes', 'author_comments', 'default_language') as $value) {
       $lookup = 'meta_' . $value;
       if (isset($content->$lookup)) {
         $content->metadata[$value] = $content->$lookup;
@@ -910,7 +914,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    *   Whatever has been stored as the setting
    */
   public function getOption($name, $default = NULL) {
-    return variable_get('h5p_' . $name, $default);
+    return config_get('h5p.settings', 'h5p_' . $name);
   }
 
   /**
@@ -923,6 +927,7 @@ class H5PDrupal implements H5PFrameworkInterface {
    *   Whatever we want to store as the setting
    */
   public function setOption($name, $value) {
+    dpm($name);
     h5p_variable_set('h5p_' . $name, $value);
   }
 
@@ -959,18 +964,18 @@ class H5PDrupal implements H5PFrameworkInterface {
   public function clearFilteredParameters($library_ids) {
     db_query(
       "UPDATE {h5p_nodes} AS n " .
-      "JOIN {h5p_nodes_libraries} AS l " . 
+      "JOIN {h5p_nodes_libraries} AS l " .
       "ON n.content_id = l.content_id " .
-      "SET n.filtered = '' " . 
+      "SET n.filtered = '' " .
       "WHERE l.library_id IN (:library_ids) ",
       array(
-        ':library_ids' => $library_ids
-      )
+      ':library_ids' => $library_ids,
+    )
     );
 
-    _drupal_flush_css_js();
-    drupal_clear_js_cache();
-    drupal_clear_css_cache();
+    _backdrop_flush_css_js();
+    backdrop_clear_js_cache();
+    backdrop_clear_css_cache();
   }
 
   /**
@@ -1001,20 +1006,17 @@ class H5PDrupal implements H5PFrameworkInterface {
   /**
    * Implements saveCachedAssets
    */
-  public function saveCachedAssets($key, $libraries) {
-  }
+  public function saveCachedAssets($key, $libraries) { }
 
   /**
    * Implements deleteCachedAssets
    */
-  public function deleteCachedAssets($library_id) {
-  }
+  public function deleteCachedAssets($library_id) { }
 
   /**
    * Implements afterExportCreated
    */
-  public function afterExportCreated($content, $filename) {
-  }
+  public function afterExportCreated($content, $filename) { }
 
   /**
    * Helper function to determine access
@@ -1075,28 +1077,28 @@ class H5PDrupal implements H5PFrameworkInterface {
       $updated_at = new DateTime($ct->updatedAt);
       db_insert('h5p_libraries_hub_cache')
         ->fields(array(
-          'machine_name' => $ct->id,
-          'major_version' => $ct->version->major,
-          'minor_version' => $ct->version->minor,
-          'patch_version' => $ct->version->patch,
-          'h5p_major_version' => $ct->coreApiVersionNeeded->major,
-          'h5p_minor_version' => $ct->coreApiVersionNeeded->minor,
-          'title' => $ct->title,
-          'summary' => $ct->summary,
-          'description' => $ct->description,
-          'icon' => $ct->icon,
-          'created_at' => $created_at->getTimestamp(),
-          'updated_at' => $updated_at->getTimestamp(),
-          'is_recommended' => $ct->isRecommended === TRUE ? 1 : 0,
-          'popularity' => $ct->popularity,
-          'screenshots' => json_encode($ct->screenshots),
-          'license' => json_encode(isset($ct->license) ? $ct->license : array()),
-          'example' => $ct->example,
-          'tutorial' => isset($ct->tutorial) ? $ct->tutorial : '',
-          'keywords' => json_encode(isset($ct->keywords) ? $ct->keywords : array()),
-          'categories' => json_encode(isset($ct->categories) ? $ct->categories : array()),
-          'owner' => $ct->owner
-        ))
+        'machine_name' => $ct->id,
+        'major_version' => $ct->version->major,
+        'minor_version' => $ct->version->minor,
+        'patch_version' => $ct->version->patch,
+        'h5p_major_version' => $ct->coreApiVersionNeeded->major,
+        'h5p_minor_version' => $ct->coreApiVersionNeeded->minor,
+        'title' => $ct->title,
+        'summary' => $ct->summary,
+        'description' => $ct->description,
+        'icon' => $ct->icon,
+        'created_at' => $created_at->getTimestamp(),
+        'updated_at' => $updated_at->getTimestamp(),
+        'is_recommended' => $ct->isRecommended === TRUE ? 1 : 0,
+        'popularity' => $ct->popularity,
+        'screenshots' => json_encode($ct->screenshots),
+        'license' => json_encode(isset($ct->license) ? $ct->license : array()),
+        'example' => $ct->example,
+        'tutorial' => isset($ct->tutorial) ? $ct->tutorial : '',
+        'keywords' => json_encode(isset($ct->keywords) ? $ct->keywords : array()),
+        'categories' => json_encode(isset($ct->categories) ? $ct->categories : array()),
+        'owner' => $ct->owner,
+      ))
         ->execute();
     }
   }
@@ -1113,10 +1115,10 @@ class H5PDrupal implements H5PFrameworkInterface {
            OR (major_version = :major AND minor_version > :minor))
         LIMIT 1",
       array(
-        ':name' => $library['machineName'],
-        ':major' => $library['majorVersion'],
-        ':minor' => $library['minorVersion']
-      )
+      ':name' => $library['machineName'],
+      ':major' => $library['majorVersion'],
+      ':minor' => $library['minorVersion'],
+    )
     )->fetchField();
   }
 }

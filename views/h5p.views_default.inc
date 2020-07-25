@@ -6,6 +6,10 @@
  * @ingroup views_default
  */
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function h5p_views_default_views() {
   // Begin copy and paste of node_points export
   $view = new view();

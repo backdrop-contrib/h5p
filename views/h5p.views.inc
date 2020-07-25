@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function h5p_views_data() {
 
@@ -65,20 +65,20 @@ function h5p_views_data() {
   $data['node']['h5p_nodes'] = array(
     'relationship' => array(
       'title' => t('H5P node properties'),
-      'label'  => t('H5P node properties'),
+      'label' => t('H5P node properties'),
       'help' => t('Will return h5p data for the node.'),
       'handler' => 'views_handler_relationship',
       'relationship field' => 'nid',
       'outer field' => 'node.nid',
       'argument table' => 'node',
-      'argument field' =>  'nid',
-      'base'   => 'h5p_nodes',
-      'field'  => 'nid',
+      'argument field' => 'nid',
+      'base' => 'h5p_nodes',
+      'field' => 'nid',
       'base field' => 'nid',
     ),
   );
 
-   // explain how we join
+  // explain how we join
   $data['h5p_nodes']['table']['join'] = array(
     // Directly links to h5p_nodes table.
     'node' => array(
@@ -109,11 +109,11 @@ function h5p_views_data() {
   $data['h5p_nodes']['h5p_libraries'] = array(
     'relationship' => array(
       'title' => t('H5P library properties'),
-      'label'  => t('H5P library properties'),
+      'label' => t('H5P library properties'),
       'help' => t('Will return h5p library data for the node.'),
       'handler' => 'views_handler_relationship',
-      'base'   => 'h5p_libraries',
-      'field'  => 'main_library_id',  // i.e h5p_nodes.main_library_id
+      'base' => 'h5p_libraries',
+      'field' => 'main_library_id', // i.e h5p_nodes.main_library_id
       'base field' => 'library_id', // i.e h5p_libraries.library_id
     ),
   );
@@ -158,7 +158,6 @@ function h5p_views_data() {
       'numeric' => TRUE,
       'validate type' => 'nid',
     ),
-
     'filter' => array(
       'handler' => 'views_handler_filter_numeric',
     ),
@@ -168,23 +167,23 @@ function h5p_views_data() {
       'base' => 'h5p_nodes',
       'base field' => 'content_id',
       'field' => 'content_id',
-      'label' => t('H5P Points - H5P Nodes')
+      'label' => t('H5P Points - H5P Nodes'),
     ),
   );
 
-   // User - H5P points relationship
+  // User - H5P points relationship
   $data['h5p_nodes']['h5p_points'] = array(
     'relationship' => array(
       'title' => t('H5P Points for node'),
-      'label'  => t('H5P'),
+      'label' => t('H5P'),
       'help' => t('Will return points.'),
       'handler' => 'views_handler_relationship',
       'relationship field' => 'content_id',
       'outer field' => 'h5p_nodes.content_id',
       'argument table' => 'h5p_nodes',
-      'argument field' =>  'content_id',
-      'base'   => 'h5p_points',
-      'field'  => 'content_id',
+      'argument field' => 'content_id',
+      'base' => 'h5p_points',
+      'field' => 'content_id',
       'base field' => 'content_id',
     ),
   );
@@ -205,15 +204,15 @@ function h5p_views_data() {
   $data['users']['h5p_uid_points'] = array(
     'relationship' => array(
       'title' => t('H5P Points for user'),
-      'label'  => t('H5P Points for user'),
+      'label' => t('H5P Points for user'),
       'help' => t('Will return an entry for each H5P that is stored for the user in the database.'),
       'handler' => 'views_handler_relationship',
       'relationship field' => 'uid',
       'outer field' => 'users.uid',
       'argument table' => 'users',
-      'argument field' =>  'uid',
-      'base'   => 'h5p_points',
-      'field'  => 'uid',
+      'argument field' => 'uid',
+      'base' => 'h5p_points',
+      'field' => 'uid',
       'base field' => 'uid',
     ),
   );
@@ -276,7 +275,7 @@ function h5p_views_data() {
 }
 
 /**
- * Implements hook_views_plugins()
+ * Implements hook_views_plugins().
  */
 function h5p_views_plugins() {
   $plugins = array(

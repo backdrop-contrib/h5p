@@ -3,7 +3,7 @@
 /**
  * @file
  *  h5peditor.install php file
- *  Install and upgrade instructions for the h5pedtior Drupal module.
+ *  Install and upgrade instructions for the h5pedtior Backdrop module.
  */
 
 /**
@@ -42,8 +42,8 @@ function h5peditor_uninstall() {
 function _h5peditor_recursive_unlink($file) {
   if (is_dir($file)) {
     // Remove all files in dir.
-    $subfiles = array_diff(scandir($file), array('.','..'));
-    foreach ($subfiles as $subfile)  {
+    $subfiles = array_diff(scandir($file), array('.', '..'));
+    foreach ($subfiles as $subfile) {
       _h5peditor_recursive_unlink($file . '/' . $subfile);
     }
     rmdir($file);
@@ -63,7 +63,7 @@ function _h5peditor_recursive_unlink($file) {
     else {
 
       // Delete local file
-      drupal_unlink($file);
+      backdrop_unlink($file);
     }
   }
 }

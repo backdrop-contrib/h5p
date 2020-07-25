@@ -1,4 +1,4 @@
-/* global Drupal */
+/* global Backdrop */
 
 var H5PEditor = H5PEditor || {};
 var ns = H5PEditor;
@@ -16,26 +16,26 @@ var ns = H5PEditor;
     var library = $library.val();
 
     ns.$ = H5P.jQuery;
-    ns.basePath = Drupal.settings.basePath + Drupal.settings.h5peditor.modulePath + '/h5peditor/';
-    ns.contentId = Drupal.settings.h5peditor.nodeVersionId;
-    ns.fileIcon = Drupal.settings.h5peditor.fileIcon;
-    ns.ajaxPath = Drupal.settings.h5peditor.ajaxPath;
-    ns.filesPath = Drupal.settings.h5peditor.filesPath;
-    ns.relativeUrl = Drupal.settings.h5peditor.relativeUrl;
-    ns.contentRelUrl = Drupal.settings.h5peditor.contentRelUrl;
-    ns.editorRelUrl = Drupal.settings.h5peditor.editorRelUrl;
-    ns.apiVersion = Drupal.settings.h5peditor.apiVersion;
-    ns.contentLanguage = Drupal.settings.h5peditor.language;
+    ns.basePath = Backdrop.settings.basePath + Backdrop.settings.h5peditor.modulePath + '/h5peditor/';
+    ns.contentId = Backdrop.settings.h5peditor.nodeVersionId;
+    ns.fileIcon = Backdrop.settings.h5peditor.fileIcon;
+    ns.ajaxPath = Backdrop.settings.h5peditor.ajaxPath;
+    ns.filesPath = Backdrop.settings.h5peditor.filesPath;
+    ns.relativeUrl = Backdrop.settings.h5peditor.relativeUrl;
+    ns.contentRelUrl = Backdrop.settings.h5peditor.contentRelUrl;
+    ns.editorRelUrl = Backdrop.settings.h5peditor.editorRelUrl;
+    ns.apiVersion = Backdrop.settings.h5peditor.apiVersion;
+    ns.contentLanguage = Backdrop.settings.h5peditor.language;
 
     // Semantics describing what copyright information can be stored for media.
-    ns.copyrightSemantics = Drupal.settings.h5peditor.copyrightSemantics;
-    ns.metadataSemantics = Drupal.settings.h5peditor.metadataSemantics;
+    ns.copyrightSemantics = Backdrop.settings.h5peditor.copyrightSemantics;
+    ns.metadataSemantics = Backdrop.settings.h5peditor.metadataSemantics;
 
     // Required styles and scripts for the editor
-    ns.assets = Drupal.settings.h5peditor.assets;
+    ns.assets = Backdrop.settings.h5peditor.assets;
 
     // Required for assets
-    ns.baseUrl = Drupal.settings.basePath;
+    ns.baseUrl = Backdrop.settings.basePath;
 
     $type.change(function () {
       if ($type.filter(':checked').val() === 'upload') {
@@ -76,7 +76,7 @@ var ns = H5PEditor;
         // Get content from editor
         h5peditor.getContent(function (content) {
 
-          // Set Drupal 7's title field
+          // Set Backdrop 7's title field
           titleFormElement.value = content.title
 
           // Set main library
@@ -101,7 +101,7 @@ var ns = H5PEditor;
   };
 
   ns.getAjaxUrl = function (action, parameters) {
-    var url = Drupal.settings.h5peditor.ajaxPath + action;
+    var url = Backdrop.settings.h5peditor.ajaxPath + action;
 
     if (parameters !== undefined) {
       for (var key in parameters) {
