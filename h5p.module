@@ -935,7 +935,7 @@ function h5p_get_content($node) {
     'mainId' => $node->nid,
     'title' => $node->title,
     'params' => $node->json_content,
-    'language' => $node->language,
+    'language' => $node->langcode,
     'library' => $node->main_library,
     'embedType' => 'div',
     'filtered' => $node->filtered,

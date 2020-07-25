@@ -817,7 +817,7 @@ class H5PBackdrop implements H5PFrameworkInterface {
               hn.json_content AS params,
               hn.embed_type,
               n.title,
-              n.language,
+              n.langcode,
               hl.library_id,
               hl.machine_name AS library_name,
               hl.major_version AS library_major_version,
