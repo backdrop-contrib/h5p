@@ -71,6 +71,7 @@ function h5peditor_menu() {
     'page arguments' => array(1, 2),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 

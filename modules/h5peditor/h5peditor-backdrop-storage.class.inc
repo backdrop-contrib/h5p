@@ -245,7 +245,7 @@ class H5peditorBackdropStorage implements H5peditorStorage {
     global $user;
 
     // Keep track of temporary files so they can be cleaned up later by Backdrop
-    $file_managed = (object) array(
+    $file_managed = entity_create('file', array(
       'uid' => $user->uid,
       'filename' => $file->getName(),
       'uri' => $uri,
@@ -253,7 +253,7 @@ class H5peditorBackdropStorage implements H5peditorStorage {
       'filesize' => $file->size,
       'status' => 0,
       'timestamp' => REQUEST_TIME,
-    );
+    ));
     file_save($file_managed);
   }
 
