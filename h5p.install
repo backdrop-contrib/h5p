@@ -138,7 +138,6 @@ function _h5p_recursive_unlink($file) {
 
 /**
  * @todo Please document this function.
- * @see http://drupal.org/node/1354
  */
 function h5p_enable() {
   if (function_exists('views_invalidate_cache')) {

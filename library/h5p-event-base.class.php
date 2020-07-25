@@ -141,7 +141,7 @@ abstract class H5PEventBase {
    * A helper which makes it easier for systems to save the data.
    * Add all relevant properties to a assoc. array.
    * There are no NULL values. Empty string or 0 is used instead.
-   * Used by both Drupal and WordPress.
+   * Used by Backdrop, Drupal and WordPress.
    *
    * @return array with keyed values
    */

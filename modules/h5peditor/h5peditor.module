@@ -520,7 +520,7 @@ function h5peditor_autoload_info() {
     'H5peditorFile' => 'h5peditor/h5peditor-file.class.php',
     'H5peditorStorage' => 'h5peditor/h5peditor-storage.interface.php',
     'H5peditor' => 'h5peditor/h5peditor.class.php',
-    'H5PEditorBackdropAjax' => 'h5peditor-drupal-ajax.class.inc',
-    'H5peditorBackdropStorage' => 'h5peditor-drupal-storage.class.inc',
+    'H5PEditorBackdropAjax' => 'h5peditor-backdrop-ajax.class.inc',
+    'H5peditorBackdropStorage' => 'h5peditor-backdrop-storage.class.inc',
   );
 }

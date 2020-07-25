@@ -65,8 +65,8 @@ function hook_h5p_filtered_params_alter(&$filtered) {
 function hook_h5p_styles_alter(&$styles, $libraries, $mode) {
   if (isset($libraries['H5P.MultiChoice']) && $libraries['H5P.MultiChoice']['majorVersion'] == '1') {
     $styles[] = (object) array(
-      // Path relative to drupal root
-      'path' => drupal_get_path('module', 'mymodule') . '/h5p-overrides.css',
+      // Path relative to backdrop root
+      'path' => backdrop_get_path('module', 'mymodule') . '/h5p-overrides.css',
       // Cache buster
       'version' => '?ver=1',
     );
@@ -88,8 +88,8 @@ function hook_h5p_styles_alter(&$styles, $libraries, $mode) {
 function hook_h5p_scripts_alter(&$scripts, $libraries, $mode) {
   if (isset($libraries['H5P.MultiChoice']) && $libraries['H5P.MultiChoice']['majorVersion'] == '1') {
     $scripts[] = (object) array(
-      // Path relative to drupal root
-      'path' => drupal_get_path('module', 'mymodule') . '/h5p-overrides.js',
+      // Path relative to backdrop root
+      'path' => backdrop_get_path('module', 'mymodule') . '/h5p-overrides.js',
       // Cache buster
       'version' => '?ver=1',
     );
