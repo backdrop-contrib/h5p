@@ -18,6 +18,7 @@ function h5peditor_menu() {
     'page callback' => 'h5peditor_libraries_callback',
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
   $items['h5peditor/%/%/content-type-cache'] = array(
@@ -25,6 +26,7 @@ function h5peditor_menu() {
     'page callback' => 'h5peditor_content_type_cache_callback',
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 
@@ -34,6 +36,7 @@ function h5peditor_menu() {
     'page arguments' => array(1, 4),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 
@@ -43,6 +46,7 @@ function h5peditor_menu() {
     'page arguments' => array(1, 2),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 
@@ -52,6 +56,7 @@ function h5peditor_menu() {
     'page arguments' => array(4, 5, 6),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 
@@ -62,6 +67,7 @@ function h5peditor_menu() {
     'page arguments' => array(4),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 
@@ -81,6 +87,7 @@ function h5peditor_menu() {
     'page arguments' => array(1, 2),
     'access callback' => 'h5peditor_access',
     'access arguments' => array(2),
+    'delivery callback' => 'backdrop_json_deliver',
     'type' => MENU_CALLBACK,
   );
 
