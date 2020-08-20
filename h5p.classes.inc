@@ -927,7 +927,6 @@ class H5PBackdrop implements H5PFrameworkInterface {
    *   Whatever we want to store as the setting
    */
   public function setOption($name, $value) {
-    dpm($name);
     h5p_variable_set('h5p_' . $name, $value);
   }
 
