@@ -1773,6 +1773,8 @@ function h5p_autoload_info() {
     'H5PExport' => 'library/h5p.classes.php',
     'H5PPermission' => 'library/h5p.classes.php',
     'H5PDisplayOptionBehaviour' => 'library/h5p.classes.php',
+    'H5PContentHubSyncStatus' => 'library/h5p.classes.php',
+    'H5PContentStatus' => 'library/h5p.classes.php',
     'H5PHubEndpoints' => 'library/h5p.classes.php',
     'H5PCore' => 'library/h5p.classes.php',
     'H5PContentValidator' => 'library/h5p.classes.php',
