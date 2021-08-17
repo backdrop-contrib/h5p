@@ -75,6 +75,9 @@ function h5p_uninstall() {
  * @link https://api.drupal.org/api/backdrop/modules%21system%21system.api.php/function/hook_install/7.x
  */
 function h5p_install() {
+  $path = 'public://hpeditor';
+  file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+
   $h5p_content_node_type = array(
     'type' => 'h5p_content',
     'name' => t('Interactive content'),
