@@ -1,6 +1,6 @@
-/* global Drupal */
+/* global Backdrop */
 (function ($) {
-  Drupal.behaviors.H5PContentHubRegistration = {
+  Backdrop.behaviors.H5PContentHubRegistration = {
     attach: function (context, settings) {
       const data = settings.H5PContentHubRegistration;
       data.container = document.getElementById('h5p-hub-registration');

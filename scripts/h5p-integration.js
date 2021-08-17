@@ -1,4 +1,4 @@
-/* global Drupal */
+/* global Backdrop */
 (function ($) { // Avoid leaking variables
 
   /**
@@ -28,7 +28,7 @@
     });
   }
 
-  Drupal.behaviors.h5pContentHub = {
+  Backdrop.behaviors.h5pContentHub = {
     attach: function (context, settings) {
       if (typeof context.getElementsByClassName === "function") {
         const buttons = context.getElementsByClassName('h5p-content-hub-button');
