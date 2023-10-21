@@ -118,7 +118,7 @@ class H5peditorBackdropStorage implements H5peditorStorage {
           $library->title = $details->title;
           $library->runnable = $details->runnable;
           $library->restricted = $super_user ? FALSE : ($details->restricted === '1' ? TRUE : FALSE);
-          $library->metadataSettings = json_decode($details->metadata_settings);
+          $library->metadataSettings = (!empty($details->metadata_settings)) ? json_decode($details->metadata_settings) : NULL;
           $librariesWithDetails[] = $library;
         }
       }
