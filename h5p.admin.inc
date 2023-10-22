@@ -545,7 +545,7 @@ function h5p_content_type_cache_update_form($form_state) {
   );
 
   $last_updated = config_get('h5p.settings', 'h5p_content_type_cache_updated_at');
-  $date_formatted = $last_updated ? format_date($last_updated) : t('Never');
+  $date_formatted = ($last_updated && $last_updated != "false") ? format_date($last_updated) : t('Never');
 
   $form['h5p_content_type_cache_last_updated'] = array(
     '#type' => 'item',
