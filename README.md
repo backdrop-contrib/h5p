@@ -25,7 +25,7 @@ Installation and usage
 
 1. Copy H5P directory to your modules directory
 2. Enable the module at the module administration page
-3. Create content of the new content type "Interactive content" 
+3. Create content of the new content type "Interactive content"
 (node/add/h5p-content).
 
 An H5P administration interface is available at `/admin/content/H5P`. This page
@@ -40,7 +40,9 @@ on http://h5p.org.
 
 Dependencies
 ------------
-None.
+
+Depends on the included libraries: [h5p-php-library](https://github.com/h5p/h5p-php-library)
+and [h5p-editor-php-library](https://github.com/h5p/h5p-editor-php-library).
 
 License
 -------

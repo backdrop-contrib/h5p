@@ -913,57 +913,6 @@ function h5p_requirements($phase) {
   return $requirements;
 }
 
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6100() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6101() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6102() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6103() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6104() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6105(&$sandbox) { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7100(&$sandbox) { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7101() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7102() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7103() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7104() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7105() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7106() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7107() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7108() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7109() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7110() { }
-
 /**
  * (re)Save all dependencies for given content.
  * This will given content nodes a relation to all libraries used by it's main library.
@@ -999,43 +948,6 @@ function h5p_save_content_dependencies($content) {
   }
 }
 
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7111() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7112() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7113() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7114() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7115() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7116() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7117() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7118() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7119() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7120() { }
-
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7121() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_7122() { }
-
 /**
  * Implements hook_update_last_removed().
  */
@@ -1044,7 +956,7 @@ function h5p_update_last_removed() {
 }
 
 /**
- * Implements hook_update_N().
+ * Convert variables to config.
  */
 function h5p_update_1000() {
   $config = config('h5p.settings');
@@ -1103,7 +1015,7 @@ function h5p_update_1000() {
 /**
  * Add content hub metadata cache
  */
-function h5p_update_7123() {
+function h5p_update_1001() {
   if (!db_table_exists('h5p_content_hub_metadata_cache')) {
     db_create_table('h5p_content_hub_metadata_cache', array(
       'description' => 'JSON representation of the content hub metadata cache',

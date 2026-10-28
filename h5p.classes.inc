@@ -992,6 +992,16 @@ class H5PBackdrop implements H5PFrameworkInterface {
   }
 
   /**
+   * Implements H5PFrameworkInterface::resetHubOrganizationData().
+   */
+  public function resetHubOrganizationData() {
+    // Organization information lives on the Hub. Forget its invalid credential
+    // so the account can be registered again, retaining this site's UUID and
+    // all local content, library, user and configuration data.
+    $this->setOption('hub_secret', NULL);
+  }
+
+  /**
    * Convert variables to fit our DB.
    */
   private static function camelToString($input) {
