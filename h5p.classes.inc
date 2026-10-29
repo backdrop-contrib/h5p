@@ -12,7 +12,7 @@ class H5PBackdrop implements H5PFrameworkInterface {
 
     return array(
       'name' => 'backdrop',
-      'version' => VERSION,
+      'version' => BACKDROP_VERSION,
       'h5pVersion' => isset($h5p_info['version']) ? $h5p_info['version'] : NULL,
     );
   }
@@ -558,9 +558,35 @@ class H5PBackdrop implements H5PFrameworkInterface {
   }
 
   /**
+   * Normalize optional structured metadata without accepting malformed scalars.
+   *
+   * @param stdClass|array|null $metadata
+   *
+   * @return array
+   */
+  public static function normalizeContentMetadata($metadata) {
+    if ($metadata === NULL) {
+      return array();
+    }
+    if ($metadata instanceof stdClass) {
+      $metadata = (array) $metadata;
+    }
+    if (!is_array($metadata)) {
+      throw new UnexpectedValueException('H5P content metadata must be an object or associative array.');
+    }
+    foreach (array_keys($metadata) as $key) {
+      if (!is_string($key)) {
+        throw new UnexpectedValueException('H5P content metadata must use named fields.');
+      }
+    }
+    return $metadata;
+  }
+
+  /**
    * Implements updateContent
    */
   public function updateContent($content, $contentMainId = NULL) {
+    $metadata = isset($content['metadata']) ? self::normalizeContentMetadata($content['metadata']) : NULL;
     $content_id = db_query("SELECT content_id FROM {h5p_nodes} WHERE content_id = :content_id", array(':content_id' => $content['id']))->fetchField();
     if ($content_id === FALSE) {
       // This can happen in Backdrop when module is reinstalled. (since the ID is predetermined)
@@ -568,7 +594,8 @@ class H5PBackdrop implements H5PFrameworkInterface {
       return;
     }
 
-    $fields = array_merge(H5PMetadata::toDBArray($content['metadata'], false), array(
+    // Omitted metadata must not clear existing optional database fields.
+    $fields = array_merge($metadata === NULL ? array() : H5PMetadata::toDBArray($metadata, false), array(
       'json_content' => $content['params'],
       'embed_type' => 'div', // TODO: Determine from library?
       'main_library_id' => $content['library']['libraryId'],
@@ -611,7 +638,8 @@ class H5PBackdrop implements H5PFrameworkInterface {
    * Implements insertContent
    */
   public function insertContent($content, $contentMainId = NULL) {
-    $fields = array_merge(H5PMetadata::toDBArray($content['metadata'], false), array(
+    $metadata = self::normalizeContentMetadata($content['metadata'] ?? NULL);
+    $fields = array_merge(H5PMetadata::toDBArray($metadata, false), array(
       'content_id' => $content['id'],
       'nid' => $contentMainId,
       'json_content' => $content['params'],
@@ -663,8 +691,15 @@ class H5PBackdrop implements H5PFrameworkInterface {
   public function getWhitelist($isLibrary, $defaultContentWhitelist, $defaultLibraryWhitelist) {
     $config = config('h5p.settings');
     $whitelist = $config->get('h5p_whitelist');
+    // Preserve saved policy, including explicit empty values. Only an absent
+    // setting should use the defaults supplied by the current core.
+    if ($whitelist === NULL) {
+      $whitelist = $defaultContentWhitelist;
+    }
     if ($isLibrary) {
       $whitelist .= ' ' . $config->get('h5p_library_whitelist_extras');
+      $extras = $config->get('h5p_library_whitelist_extras');
+      $whitelist .= ' ' . ($extras === NULL ? $defaultLibraryWhitelist : $extras);
     }
     return $whitelist;
   }
@@ -796,6 +831,8 @@ class H5PBackdrop implements H5PFrameworkInterface {
       return FALSE;
     }
     $library = H5PCore::snakeToCamel($library);
+    // Backdrop stores libraries in major/minor folders, without a schema flag.
+    $library['patchVersionInFolderName'] = FALSE;
 
     $result = db_query(
       "SELECT hl.machine_name AS name,
@@ -975,7 +1012,8 @@ class H5PBackdrop implements H5PFrameworkInterface {
    *   Whatever has been stored as the setting
    */
   public function getOption($name, $default = NULL) {
-    return config_get('h5p.settings', 'h5p_' . $name);
+    $value = config_get('h5p.settings', 'h5p_' . $name);
+    return $value === NULL ? $default : $value;
   }
 
   /**
@@ -1022,6 +1060,13 @@ class H5PBackdrop implements H5PFrameworkInterface {
       ->fields($processedFields)
       ->condition('content_id', $id)
       ->execute();
+
+    // hook_load() copies these fields into Backdrop's cached node. Content IDs
+    // may be revision IDs, so resolve the owning node instead of assuming nid.
+    $nid = db_query('SELECT nid FROM {h5p_nodes} WHERE content_id = :id', array(':id' => $id))->fetchField();
+    if ($nid) {
+      entity_get_controller('node')->resetCache(array($nid));
+    }
   }
 
   /**
