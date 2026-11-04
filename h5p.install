@@ -914,24 +914,6 @@ function h5p_requirements($phase) {
 }
 
 // TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6100() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6101() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6102() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6103() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6104() { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
-function h5p_update_6105(&$sandbox) { }
-
-// TODO The old hook_update_N functions cannot be applied to Backdrop.
 function h5p_update_7100(&$sandbox) { }
 
 // TODO The old hook_update_N functions cannot be applied to Backdrop.
@@ -1048,56 +1030,60 @@ function h5p_update_last_removed() {
  */
 function h5p_update_1000() {
   $config = config('h5p.settings');
-  $config->set('h5p_frame', update_variable_get('h5p_frame', 'TRUE'));
-  $config->set('h5p_export', update_variable_get('h5p_export', '1'));
-  $config->set('h5p_embed', update_variable_get('h5p_embed', 'H5PDisplayOptionBehaviour::ALWAYS_SHOW'));
-  $config->set('h5p_copyright', update_variable_get('h5p_copyright', 'TRUE'));
-  $config->set('h5p_icon', update_variable_get('h5p_icon', 'TRUE'));
-  $config->set('h5p_revisioning', update_variable_get('h5p_revisioning', '1'));
-  $config->set('h5p_whitelist', update_variable_get('h5p_whitelist', 'dynamic value in file /h5p/h5p.install line 1659'));
-  $config->set('h5p_library_whitelist_extras', update_variable_get('h5p_library_whitelist_extras', 'dynamic value in file /h5p/h5p.classes.inc line 606'));
-  $config->set('h5p_dev_mode', update_variable_get('h5p_dev_mode', '0'));
-  $config->set('h5p_library_development', update_variable_get('h5p_library_development', ''));
-  $config->set('h5p_save_content_state', update_variable_get('h5p_save_content_state', ''));
-  $config->set('h5p_save_content_frequency', update_variable_get('h5p_save_content_frequency', '30'));
-  $config->set('h5p_enable_lrs_content_types', update_variable_get('h5p_enable_lrs_content_types', ''));
-  $config->set('h5p_hub_is_enabled', update_variable_get('h5p_hub_is_enabled', 'TRUE'));
-  $config->set('h5p_send_usage_statistics', update_variable_get('h5p_send_usage_statistics', 'TRUE'));
-  $config->set('h5p_content_type_cache_updated_at', update_variable_get('h5p_content_type_cache_updated_at', 'false'));
-  $config->set('h5p_default_path', update_variable_get('h5p_default_path', 'h5p'));
-  $config->set('h5p_first_runnable_saved', update_variable_get('h5p_first_runnable_saved', ''));
-  $config->set('h5p_library_config', update_variable_get('h5p_library_config', 'NULL'));
-  $config->set('hp_name', update_variable_get('hp_name', 'dynamic variable in file /h5p/h5p.classes.inc line 913'));
-  $config->set('h5p_icon_in_action_bar', update_variable_get('h5p_icon_in_action_bar', 'TRUE'));
-  $config->set('h5p_allow_communication_with_h5p_org', update_variable_get('h5p_allow_communication_with_h5p_org', 'TRUE'));
-  $config->set('h5p_fetched_library_metadata_on', update_variable_get('h5p_fetched_library_metadata_on', ''));
-  $config->set('h5p_crossorigin', update_variable_get('h5p_crossorigin', 'NULL'));
-  $config->set('h5p_crossorigin_cache_buster', update_variable_get('h5p_crossorigin_cache_buster', 'NULL'));
-  update_variable_del('h5p_frame');
-  update_variable_del('h5p_export');
-  update_variable_del('h5p_embed');
-  update_variable_del('h5p_copyright');
-  update_variable_del('h5p_icon');
-  update_variable_del('h5p_revisioning');
-  update_variable_del('h5p_whitelist');
-  update_variable_del('h5p_library_whitelist_extras');
-  update_variable_del('h5p_dev_mode');
-  update_variable_del('h5p_library_development');
-  update_variable_del('h5p_save_content_state');
-  update_variable_del('h5p_save_content_frequency');
-  update_variable_del('h5p_enable_lrs_content_types');
-  update_variable_del('h5p_hub_is_enabled');
-  update_variable_del('h5p_send_usage_statistics');
-  update_variable_del('h5p_content_type_cache_updated_at');
-  update_variable_del('h5p_default_path');
-  update_variable_del('h5p_first_runnable_saved');
-  update_variable_del('h5p_library_config');
-  update_variable_del('hp_name');
-  update_variable_del('h5p_icon_in_action_bar');
-  update_variable_del('h5p_allow_communication_with_h5p_org');
-  update_variable_del('h5p_fetched_library_metadata_on');
-  update_variable_del('h5p_crossorigin');
-  update_variable_del('h5p_crossorigin_cache_buster');
+  // Use the shipped defaults, never the old generated placeholder strings.
+  $defaults = json_decode(file_get_contents(__DIR__ . '/config/h5p.settings.json'), TRUE);
+  if (!is_array($defaults)) {
+    throw new Exception('Unable to read the H5P default configuration.');
+  }
+  unset($defaults['_config_name']);
+  $names = array_merge(array_keys($defaults), array('hp_name'));
+  $legacy = array();
+  $missing = new stdClass();
+  if (db_table_exists('variable')) {
+    foreach ($names as $name) {
+      $value = update_variable_get($name, $missing);
+      if ($value !== $missing) {
+        $legacy[$name] = $value;
+      }
+    }
+  }
+
+  // Already migrated Backdrop sites must retain their current settings.
+  $existing = $config->getOriginal();
+  unset($existing['_config_name']);
+  if ($existing && !$legacy) {
+    return;
+  }
+
+  $placeholders = array(
+    'H5PDisplayOptionBehaviour::ALWAYS_SHOW',
+    'dynamic value in file /h5p/h5p.install line 1659',
+    'dynamic value in file /h5p/h5p.classes.inc line 606',
+    'dynamic variable in file /h5p/h5p.classes.inc line 913',
+  );
+  foreach ($names as $name) {
+    // FALSE, zero and empty strings can all be intentional settings.
+    if (isset($existing[$name]) && !in_array($existing[$name], $placeholders, TRUE)) {
+      continue;
+    }
+    $value = isset($legacy[$name]) ? $legacy[$name] : NULL;
+    if ($value === NULL || in_array($value, $placeholders, TRUE)) {
+      $value = isset($defaults[$name]) ? $defaults[$name] : NULL;
+    }
+    if ($value !== NULL) {
+      $existing[$name] = $value;
+    }
+    elseif (array_key_exists($name, $existing)) {
+      unset($existing[$name]);
+    }
+  }
+
+  // Persist stored values independently of runtime settings.php overrides.
+  // A failed save throws; leave every legacy variable available for retry.
+  $config->setData($existing)->save();
+  foreach ($legacy as $name => $value) {
+    update_variable_del($name);
+  }
 }
 
 /**
