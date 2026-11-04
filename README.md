@@ -38,6 +38,21 @@ lists all installed H5P libraries, and provides the funtionality to:
 The process of creating new content and new libraries for H5P is documented
 on http://h5p.org.
 
+Bundled H5P libraries
+--------------------
+
+This module bundles H5P Core 1.28.0 and H5P Editor `moodle-1.28.2`,
+including the H5P CKEditor 5 build. Exact upstream revisions:
+
+- [H5P Core](https://github.com/h5p/h5p-php-library/tree/2aeb0b83fa603e331381b3a6b8bf42c3773ba140):
+  `2aeb0b83fa603e331381b3a6b8bf42c3773ba140`.
+- [H5P Editor](https://github.com/h5p/h5p-editor-php-library/tree/73dfed6073b8916faa7e8b1a5fca5adb2bde5dc4):
+  `73dfed6073b8916faa7e8b1a5fca5adb2bde5dc4`.
+
+Two intentional Core differences are retained: `libraryToString()` accepts
+the legacy optional folder-name argument and delegates to
+`libraryToFolderName()`; the event-base comment names Backdrop (no runtime effect).
+
 Dependencies
 ------------
 None.
